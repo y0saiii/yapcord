@@ -40,7 +40,7 @@ If you update later, hit the refresh arrow on the YapCord card in
 | **Message Search** | A search bar in the chat header. Search by text, who sent it and date, and search deleted messages still in your log. Press Enter to jump to a match. |
 | **RelationshipNotifier** | A toast, a desktop notification and a history entry when someone unfriends you or you get removed from a server, and when things go the other way. |
 | **Improve Yapit UI** | Makes Yapit look and feel like Discord: the rail, sidebar, channels, messages, composer and menus reshaped to Discord's layout, plus a fast mode that drops unused fonts and stops animations. It keeps whatever colours your theme uses. A compact message mode is in there too. |
-| **MultiLine** | Enter starts a new line instead of sending, so one message can span as many lines as you like. Ctrl + Enter sends it and the box grows as you type. Off until you switch it on, so nobody's Enter key changes without asking. |
+| **MultiLine** | Shift + Enter starts a new line so one message can span as many lines as you like, while Enter still sends it the usual way. The box grows as you type. Off until you switch it on, so nobody's Enter key changes without asking. |
 
 ### Default keybinds
 

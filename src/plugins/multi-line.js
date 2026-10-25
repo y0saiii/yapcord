@@ -76,8 +76,9 @@ window.YapCord = window.YapCord || {};
     var el = e.target;
     if (!el || el.tagName !== "TEXTAREA") return;
     var ctrl = e.ctrlKey || e.metaKey;
-    if (e.key === "Enter" && ctrl && !e.altKey) {
-      if (cfg().ctrlSend === false) return;
+    if (e.key === "Enter") {
+      var sends = ctrl ? !e.altKey : (cfg().enterSends !== false && !e.shiftKey && !e.altKey);
+      if (!sends) return;
       if (suggestOpen()) return;
       e.preventDefault();
       e.stopPropagation();
@@ -178,12 +179,12 @@ window.YapCord = window.YapCord || {};
   YC.registerPlugin({
     id: PLUGIN,
     name: "MultiLine",
-    description: "Enter starts a new line instead of sending, so one message can run over as many lines as you like.",
+    description: "Shift + Enter starts a new line instead of sending, so one message can run over as many lines as you like.",
     defaultEnabled: false,
 
     settings: [
-      { id: "ctrlSend", type: "toggle", label: "Ctrl + Enter sends", default: true,
-        desc: "Enter starts a new line and Ctrl + Enter (Cmd + Enter on a Mac) sends the message. Turn this off to send with the Send button only." },
+      { id: "enterSends", type: "toggle", label: "Enter sends", default: true,
+        desc: "Enter sends the message and Shift + Enter starts a new line, the usual way. Turn this off and Enter starts the new line instead, with Ctrl + Enter to send." },
       { id: "grow", type: "toggle", label: "Grow the box as you type", default: true,
         desc: "The message box gets taller for every line, up to about a third of the window. Off leaves a fixed box you can resize by dragging." }
     ],
