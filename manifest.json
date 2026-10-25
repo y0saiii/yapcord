@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "YapCord",
+  "version": "1.0.0",
+  "description": "Themes, plugins, keybinds, a message log and in-chat search for yapit.online.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "YapCord: open settings",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "permissions": ["storage", "notifications"],
+  "content_scripts": [
+    {
+      "matches": ["https://yapit.online/*", "http://yapit.online/*"],
+      "js": ["src/main-world.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://yapit.online/*", "http://yapit.online/*"],
+      "css": ["src/styles/yapcord.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://yapit.online/*", "http://yapit.online/*"],
+      "js": [
+        "src/core/bus.js",
+        "src/core/emoji-data.js",
+        "src/core/emoji-extended.js",
+        "src/core/themes.js",
+        "src/core/ui.js",
+        "src/core/api.js",
+        "src/core/store.js",
+        "src/core/keybinds.js",
+        "src/core/plugins.js",
+        "src/settings/panel.js",
+        "src/plugins/theme-manager.js",
+        "src/plugins/message-logger.js",
+        "src/plugins/better-emoji-picker.js",
+        "src/plugins/quick-keybinds.js",
+        "src/plugins/message-search.js",
+        "src/plugins/relationship-notifier.js",
+        "src/plugins/improve-yapit-ui.js",
+        "src/content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["logo.png", "icons/*.png"],
+      "matches": ["https://yapit.online/*", "http://yapit.online/*"]
+    }
+  ]
+}
