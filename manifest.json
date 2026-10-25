@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YapCord",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Themes, plugins, keybinds, a message log and in-chat search for yapit.online.",
   "icons": {
     "16": "icons/icon16.png",
@@ -55,6 +55,10 @@
         "src/plugins/relationship-notifier.js",
         "src/plugins/improve-yapit-ui.js",
         "src/plugins/multi-line.js",
+        "src/plugins/custom-pfp.js",
+        "src/plugins/notification-sounds.js",
+        "src/plugins/character-counter.js",
+        "src/plugins/custom-font.js",
         "src/content.js"
       ],
       "run_at": "document_start"
