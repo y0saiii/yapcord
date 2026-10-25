@@ -336,6 +336,90 @@ window.YapCord = window.YapCord || {};
   }
 
 
+  function openHowCss() {
+    function li(code, text) {
+      return h("li", {}, h("code", { text: code }), text);
+    }
+
+    YC.ui.openModal({
+      title: "How Yapit's CSS works",
+      render: function (body, api) {
+        var box = h("div", { class: "yc-how" });
+
+        box.appendChild(h("h4", { text: "It is one plain stylesheet" }));
+        box.appendChild(h("p", {
+          text: "Yapit paints the whole app from a single style block sitting in the page. There is no framework and no build step, so anything that works in DevTools works here. Right click an element, pick Inspect, and DevTools shows you the exact rule that colours it."
+        }));
+
+        box.appendChild(h("h4", { text: "The colours are variables" }));
+        box.appendChild(h("p", {
+          text: "Nearly every colour comes from a variable defined on :root, so a full restyle can be as short as overriding five of them:"
+        }));
+        box.appendChild(h("ul", {},
+          li("--ink", " text, borders and the hard offset shadows."),
+          li("--paper", " card, panel and dialog background."),
+          li("--sky", " the channel list and any recessed surface."),
+          li("--yap", " the accent: buttons, banners, highlights."),
+          li("--mute", " secondary text such as timestamps and hints."),
+          li("--line", " the border shorthand, 3px solid var(--ink)."),
+          li("--hard", " the offset shadow, 4px 4px 0 var(--ink)."),
+          li("--edge", " the border colour on inputs and selects.")
+        ));
+
+        box.appendChild(h("h4", { text: "Dark mode is an attribute" }));
+        box.appendChild(h("p", {
+          text: "Yapit puts data-theme=\"dark\" on the html tag and redefines the same variables in a [data-theme=dark] block. To stay readable in both modes, set your variables twice, once for the plain :root and once for the dark block."
+        }));
+
+        box.appendChild(h("h4", { text: "The layout" }));
+        box.appendChild(h("ul", {},
+          li(".app", " is a grid: 76px rail, 250px channel list, the rest is chat."),
+          li(".nav", " is the top bar and .banner is the announcement strip."),
+          li(".rail", " holds server icons, .side holds channels, .main is the chat column."),
+          li("#msgs", " is the scrolling message list. Each message is a .m row with a round .av avatar."),
+          li("#cf", " is the composer. .btn and .ghost are the buttons you see around the site.")
+        ));
+
+        box.appendChild(h("h4", { text: "How your CSS gets applied" }));
+        box.appendChild(h("p", {
+          text: "Save & apply drops your code into a style tag that YapCord appends after Yapit's own sheet, so at equal weight your rules win. The Custom CSS theme has to be the selected one for it to show."
+        }));
+        box.appendChild(h("p", {
+          text: "Yapit's plain :root rule still outranks yours, so wrap variable overrides in :root:root with !important, exactly like the built in themes do."
+        }));
+
+        box.appendChild(h("h4", { text: "A starting point" }));
+        var pre = h("pre", {});
+        pre.appendChild(h("code", {
+          text: [
+            ":root:root{",
+            "  --paper:#0F1115 !important;",
+            "  --ink:#E9EEF7 !important;",
+            "  --sky:#161B24 !important;",
+            "  --mute:#93A1B5 !important;",
+            "  --yap:#5FD6A8 !important;",
+            "}",
+            ".m:hover{background:rgba(95,214,168,.08);border-radius:10px}",
+            ".card{box-shadow:6px 6px 0 var(--yap)}"
+          ].join("\n")
+        }));
+        box.appendChild(pre);
+
+        box.appendChild(h("h4", { text: "Three habits that save time" }));
+        box.appendChild(h("ul", {},
+          h("li", { text: "Tweak the rule in DevTools first, then paste it into the editor. The editor autosaves as you type." }),
+          h("li", { text: "If a rule seems ignored, add !important. A few site selectors are stubborn." }),
+          h("li", { text: "Check your muted text still reads against your background. Aim for a contrast ratio of at least 4.5." })
+        ));
+
+        box.appendChild(h("div", { class: "yc-foot" },
+          h("button", { type: "button", class: "yc-btn primary", text: "Got it", onclick: function () { api.close(); } })));
+        body.appendChild(box);
+      }
+    });
+  }
+
+
   function renderThemes(body) {
     body.appendChild(h("p", { class: "yc-muted yc-lead", text: "Pick a look for Yapit, or write your own CSS below." }));
 
@@ -387,7 +471,9 @@ window.YapCord = window.YapCord || {};
     });
 
     body.appendChild(h("div", { class: "yc-field" },
-      h("label", { class: "yc-field-label", text: "Custom CSS" }),
+      h("div", { class: "yc-field-inline" },
+        h("label", { class: "yc-field-label", text: "Custom CSS" }),
+        h("button", { type: "button", class: "yc-btn ghost", text: "How does this work?", onclick: openHowCss })),
       ta,
       h("div", { class: "yc-row" }, saveBtn, status)));
   }
