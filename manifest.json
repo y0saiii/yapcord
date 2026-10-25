@@ -54,6 +54,7 @@
         "src/plugins/message-search.js",
         "src/plugins/relationship-notifier.js",
         "src/plugins/improve-yapit-ui.js",
+        "src/plugins/multi-line.js",
         "src/content.js"
       ],
       "run_at": "document_start"

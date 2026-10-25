@@ -116,9 +116,9 @@ window.YapCord = window.YapCord || {};
     ".badge{border:0 !important;border-radius:999px !important;background:var(--yap) !important;color:var(--yc-on-accent,#fff) !important;font-size:.6875rem !important;padding:0 .5rem !important}",
 
     ".compose{border-top:1px solid var(--yc-border) !important;background:var(--yc-main) !important;padding:12px 16px 24px !important;gap:.5rem !important}",
-    ".compose input,.compose input[name=body]{background:var(--yc-input) !important;border:0 !important;border-radius:8px !important;box-shadow:none !important;color:var(--yc-text) !important;padding:.7rem .9rem !important;font-size:.9375rem !important}",
-    ".compose input::placeholder{color:var(--yc-mute) !important}",
-    ".compose input:focus{border:0 !important;box-shadow:none !important;outline:2px solid var(--yap) !important}",
+    ".compose input,.compose textarea,.compose [name=body]{background:var(--yc-input) !important;border:0 !important;border-radius:8px !important;box-shadow:none !important;color:var(--yc-text) !important;padding:.7rem .9rem !important;font-size:.9375rem !important}",
+    ".compose input::placeholder,.compose textarea::placeholder{color:var(--yc-mute) !important}",
+    ".compose input:focus,.compose textarea:focus{border:0 !important;box-shadow:none !important;outline:2px solid var(--yap) !important}",
     ".reply-bar{background:var(--yc-input) !important;border:1px solid var(--yc-border) !important;border-radius:8px !important}",
 
     ".btn{background:var(--yap) !important;color:var(--yc-on-accent,#fff) !important;border:0 !important;border-radius:3px !important;box-shadow:none !important;font-weight:600 !important;padding:.55rem 1rem !important}",
