@@ -34,6 +34,7 @@ window.YapCord = window.YapCord || {};
 
   var active = false;
   var tab = "plugins";
+  var pluginQuery = "";
   var panel = null;
   var mounted = false;
   var scheduled = false;
@@ -189,6 +190,30 @@ window.YapCord = window.YapCord || {};
 
     body.appendChild(h("p", { class: "yc-muted yc-lead", text: "Toggle a plugin to turn it on or off. Every plugin has its own options." }));
 
+    var cards = [];
+    var empty = h("p", { class: "yc-muted yc-search-empty", text: "" });
+    empty.hidden = true;
+
+    body.appendChild(h("div", { class: "yc-field yc-plugin-filter" },
+      h("input", {
+        type: "search", class: "yc-input", placeholder: "Search plugins",
+        "aria-label": "Search plugins", value: pluginQuery,
+        oninput: function (e) { pluginQuery = e.target.value; filter(); }
+      })));
+    body.appendChild(empty);
+
+    function filter() {
+      var q = pluginQuery.trim().toLowerCase();
+      var shown = 0;
+      cards.forEach(function (c) {
+        var hit = !q || c.hay.indexOf(q) >= 0;
+        c.card.hidden = !hit;
+        if (hit) shown++;
+      });
+      empty.hidden = shown !== 0;
+      empty.textContent = shown ? "" : "No plugins match \"" + pluginQuery.trim() + "\".";
+    }
+
     list.forEach(function (spec) {
       var card = h("div", { class: "yc-plugin" + (YC.enabled(spec.id) ? " on" : "") });
 
@@ -233,8 +258,14 @@ window.YapCord = window.YapCord || {};
         card.appendChild(h("small", { class: "yc-muted", text: "No options; it just works." }));
       }
 
+      cards.push({
+        card: card,
+        hay: (spec.name + " " + (spec.description || "") + " " + spec.id).toLowerCase()
+      });
       body.appendChild(card);
     });
+
+    filter();
   }
 
   function renderSetting(spec, s) {

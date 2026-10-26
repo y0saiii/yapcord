@@ -342,6 +342,9 @@ select.yc-input { appearance: auto; }
   border-top: 2px dashed var(--line, rgba(20, 18, 16, .16));
 }
 .yc-plugin > .yc-linkbtn { margin-top: 8px; }
+.yc-plugin[hidden] { display: none; }
+.yc-plugin-filter { margin: 0 0 4px; }
+.yc-search-empty { margin: 4px 0 10px; font-size: .84rem; }
 
 .yc-themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin: 6px 0 4px; }
 .yc-theme {
