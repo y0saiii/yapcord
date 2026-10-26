@@ -45,6 +45,7 @@ If you update later, hit the refresh arrow on the YapCord card in
 | **Notification Sounds** | A soft two tone note when someone pings you and a different one for a direct message, with a volume slider and test buttons. Off by default. |
 | **Custom Font** | Give the whole site any font you like, from the presets (Verdana, Tahoma, Georgia and friends) or a font name you type yourself. Off by default. |
 | **Character Counter** | A small chip above the composer showing how much of Yapit's 2000 character limit you have used, turning red near the end. Off by default. |
+| **Copy Assets** | Right click a server icon or anyone's avatar and YapCord adds two choices to the menu: copy the link to that picture, or download it to your computer. It joins Yapit's own right click menu, so Server Settings and Copy Server ID are still there. On by default. |
 
 Your whole setup (plugins, theme, keybinds, saved GIFs) lives in the **Data**
 tab. Hit **Export settings** to download it as one file you can share with a

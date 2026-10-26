@@ -15,7 +15,8 @@ window.YapCord = window.YapCord || {};
     "custom-pfp": '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c0-3.6 3.4-5.5 7.5-5.5s7.5 1.9 7.5 5.5"/>',
     "notification-sounds": '<path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15 9.5a4 4 0 0 1 0 5"/><path d="M17.8 6.8a8 8 0 0 1 0 10.4"/>',
     "character-counter": '<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7.5 10.5v3M7.5 13.5h.01M11 10.5v3M13.5 10.5v3M11 13.5h2.5M16 10.5v3M16 13.5h.01"/>',
-    "custom-font": '<path d="M4 19 11 5l7 14"/><path d="M7 14.5h8"/>'
+    "custom-font": '<path d="M4 19 11 5l7 14"/><path d="M7 14.5h8"/>',
+    "copy-assets": '<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l4.5-4.5 3 3L15 12l5 5"/>'
   };
 
   function icon(id) {

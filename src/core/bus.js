@@ -2,7 +2,7 @@ window.YapCord = window.YapCord || {};
 (function (YC) {
   "use strict";
 
-  YC.VERSION = "1.1.0";
+  YC.VERSION = "1.1.1";
   YC.NAME = "YapCord";
 
   var handlers = Object.create(null);
