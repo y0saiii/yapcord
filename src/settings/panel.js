@@ -12,7 +12,6 @@ window.YapCord = window.YapCord || {};
     "message-search": '<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/>',
     "relationship-notifier": '<path d="M18 8.5a6 6 0 1 0-12 0c0 6.5-2.5 8-2.5 8h17s-2.5-1.5-2.5-8"/><path d="M10.3 20.5a2 2 0 0 0 3.4 0"/>',
     "multi-line": '<path d="M4 7h16M4 12h10M4 17h16"/><path d="M17 15l2 2 2-2"/>',
-    "custom-pfp": '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c0-3.6 3.4-5.5 7.5-5.5s7.5 1.9 7.5 5.5"/>',
     "notification-sounds": '<path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15 9.5a4 4 0 0 1 0 5"/><path d="M17.8 6.8a8 8 0 0 1 0 10.4"/>',
     "character-counter": '<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7.5 10.5v3M7.5 13.5h.01M11 10.5v3M13.5 10.5v3M11 13.5h2.5M16 10.5v3M16 13.5h.01"/>',
     "custom-font": '<path d="M4 19 11 5l7 14"/><path d="M7 14.5h8"/>',

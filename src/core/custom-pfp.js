@@ -2,7 +2,6 @@ window.YapCord = window.YapCord || {};
 (function (YC) {
   "use strict";
 
-  var PLUGIN = "custom-pfp";
   var ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
   var MAX_BYTES = 5 * 1024 * 1024;
   var MAX_SIDE = 3000;
@@ -26,13 +25,16 @@ window.YapCord = window.YapCord || {};
   var urls = {};
   var live = false;
   var me = null;
+  var observer = null;
+  var listening = false;
+  var saved = new WeakMap();
 
-  function cfg() {
-    try { return YC.store.plugin(PLUGIN); } catch (e) { return {}; }
+  function masterOn() {
+    try { return YC.store.get("master", true) !== false; } catch (e) { return true; }
   }
 
   function entries() {
-    var p = YC.store.cfg.pfps;
+    var p = YC.store && YC.store.cfg ? YC.store.cfg.pfps : null;
     return p && typeof p === "object" ? p : {};
   }
 
@@ -66,12 +68,12 @@ window.YapCord = window.YapCord || {};
     return { tx: round2(tx), ty: round2(ty), z: round2(z) };
   }
 
-  function loadMe() {
-    if (me) return Promise.resolve(me);
+  function loadMe(force) {
+    if (me && !force) return Promise.resolve(me);
     return YC.api("me").then(function (res) {
       me = res && res.user ? res.user : null;
       return me;
-    }).catch(function () { return null; });
+    }).catch(function () { return me; });
   }
 
   function needle(uid) {
@@ -91,35 +93,66 @@ window.YapCord = window.YapCord || {};
     var list = entries();
     Object.keys(urls).forEach(function (uid) {
       var shift = cropShift(meta(list[uid]));
-      var sel = '.av img[src*="' + needle(uid) + '"]';
+      var sel = 'img[src^="' + needle(uid) + '"], img[data-yc-pfp="' + uid + '"]';
       Array.prototype.forEach.call(document.querySelectorAll(sel), function (im) {
-        if (im.getAttribute("data-yc-pfp") === uid) return;
-        im.setAttribute("data-yc-orig", im.getAttribute("src") || "");
-        im.setAttribute("data-yc-pfp", uid);
-        im.src = urls[uid];
+        if (im.getAttribute("data-yc-pfp") !== uid) {
+          var own = im.getAttribute("src") || "";
+          if (own.slice(0, 5) !== "blob:") im.setAttribute("data-yc-orig", own);
+          im.setAttribute("data-yc-pfp", uid);
+        }
+        if (im.src !== urls[uid]) im.src = urls[uid];
         if (shift) {
           im.style.transform = "translate(" + shift.tx + "%," + shift.ty + "%) scale(" + shift.z + ")";
           im.style.transformOrigin = "50% 50%";
+        } else {
+          im.style.transform = "";
+          im.style.transformOrigin = "";
         }
       });
     });
   }
 
-  function unpatchAll() {
-    Array.prototype.forEach.call(document.querySelectorAll("img[data-yc-pfp]"), function (im) {
-      var orig = im.getAttribute("data-yc-orig");
-      if (orig) im.src = orig;
-      im.style.transform = "";
-      im.style.transformOrigin = "";
-      im.removeAttribute("data-yc-pfp");
-      im.removeAttribute("data-yc-orig");
+  function unpatch(uid) {
+    Array.prototype.forEach.call(document.querySelectorAll('img[data-yc-pfp="' + uid + '"]'), function (im) {
+      restore(im);
     });
   }
 
-  function clearLocal(uid) {
+  function restore(im) {
+    var orig = im.getAttribute("data-yc-orig");
+    if (orig) im.src = orig;
+    im.style.transform = "";
+    im.style.transformOrigin = "";
+    im.removeAttribute("data-yc-pfp");
+    im.removeAttribute("data-yc-orig");
+  }
+
+  function unpatchAll() {
+    Array.prototype.forEach.call(document.querySelectorAll("img[data-yc-pfp]"), restore);
+  }
+
+  function dropLocal(uid) {
     if (urls[uid]) { URL.revokeObjectURL(urls[uid]); delete urls[uid]; }
-    if (YC.store.cfg.pfps) delete YC.store.cfg.pfps[uid];
-    YC.store.save(true);
+    if (YC.store && YC.store.cfg && YC.store.cfg.pfps) delete YC.store.cfg.pfps[uid];
+    try { YC.store.save(true); } catch (e) {}
+    unpatch(uid);
+  }
+
+  function iconUrl(icon) {
+    if (!icon) return "";
+    if (/^https?:/i.test(icon) || icon.slice(0, 2) === "//" || icon.indexOf("data:") === 0 || icon.indexOf("icons/") === 0) return icon;
+    return "icons/" + icon;
+  }
+
+  function refreshVisible(icon, uid) {
+    if (!uid) return;
+    var next = iconUrl(icon);
+    if (!next) return;
+    var sel = 'img[data-yc-pfp="' + uid + '"], img[src^="' + needle(uid) + '"]';
+    Array.prototype.forEach.call(document.querySelectorAll(sel), function (im) {
+      if (im.getAttribute("data-yc-pfp") === uid) { im.setAttribute("data-yc-orig", next); return; }
+      im.src = next;
+    });
   }
 
   function drawCrop(img, c) {
@@ -275,52 +308,38 @@ window.YapCord = window.YapCord || {};
     });
   }
 
-  function refreshVisible(icon) {
-    return loadMe().then(function (u) {
-      if (!u) return;
-      var hit = needle(u.id);
-      Array.prototype.forEach.call(document.querySelectorAll(".av img"), function (im) {
-        var s = im.getAttribute("src") || "";
-        if (s.indexOf(hit) === 0) im.src = "icons/" + icon;
-      });
+  function saveGif(uid, file, crop) {
+    return new Promise(function (resolve) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var data = String(fr.result);
+        if (data.length > 3000000) {
+          YC.ui.toast("That GIF is too big to keep the moving copy of; everyone sees the still picture.", "warn");
+          resolve();
+          return;
+        }
+        YC.store.cfg.pfps = YC.store.cfg.pfps || {};
+        YC.store.cfg.pfps[uid] = { src: data, cx: crop.cx, cy: crop.cy, w: crop.w, h: crop.h, z: crop.z };
+        YC.store.save(true);
+        rebuildUrl(uid, YC.store.cfg.pfps[uid]).then(function () {
+          patchAll();
+          resolve();
+        });
+      };
+      fr.onerror = function () { resolve(); };
+      fr.readAsDataURL(file);
     });
   }
 
   function sendUpload(dataUrl, gifFile, crop) {
     return YC.api("icon_upload", { data: dataUrl }).then(function (res) {
       if (!res || !res.icon) throw new Error("Yapit did not take that image.");
-      return refreshVisible(res.icon).then(function () {
-        if (!gifFile) return;
-        return loadMe().then(function (u) {
-          if (!u) return;
-          return new Promise(function (resolve) {
-            var fr = new FileReader();
-            fr.onload = function () {
-              var data = String(fr.result);
-              if (data.length > 3000000) {
-                YC.ui.toast("That GIF is too big to keep the moving copy of; everyone sees the still picture.", "warn");
-                resolve();
-                return;
-              }
-              YC.store.cfg.pfps = YC.store.cfg.pfps || {};
-              YC.store.cfg.pfps[String(u.id)] = {
-                src: data,
-                cx: crop.cx,
-                cy: crop.cy,
-                w: crop.w,
-                h: crop.h,
-                z: crop.z
-              };
-              YC.store.save(true);
-              rebuildUrl(String(u.id), YC.store.cfg.pfps[String(u.id)]).then(function () {
-                patchAll();
-                resolve();
-              });
-            };
-            fr.onerror = function () { resolve(); };
-            fr.readAsDataURL(gifFile);
-          });
-        });
+      return loadMe(true).then(function (u) {
+        if (!u) return;
+        var uid = String(u.id);
+        if (!gifFile) dropLocal(uid);
+        refreshVisible(res.icon, uid);
+        if (gifFile) return saveGif(uid, gifFile, crop);
       }).then(function () {
         YC.ui.toast("Profile picture updated.");
       });
@@ -352,8 +371,10 @@ window.YapCord = window.YapCord || {};
         var dataUrl;
         try { dataUrl = drawCrop(img, crop); }
         catch (e) { YC.ui.toast("Could not read that image.", "error"); return; }
-        var gif = cfg().animateGif !== false && type === "image/gif" ? file : null;
-        return sendUpload(dataUrl, gif, crop).catch(function (e) {
+        var gif = type === "image/gif" ? file : null;
+        return loadMe().then(function () {
+          return sendUpload(dataUrl, gif, crop);
+        }).catch(function (e) {
           YC.ui.toast(String(e && e.message || e), "error");
         });
       });
@@ -365,85 +386,97 @@ window.YapCord = window.YapCord || {};
     img.src = url;
   }
 
-  function pick() {
-    var inp = document.createElement("input");
-    inp.type = "file";
-    inp.accept = "image/png,image/jpeg,image/gif,image/webp";
-    inp.onchange = function () {
-      var f = inp.files && inp.files[0];
-      if (f) upload(f);
-    };
-    inp.click();
+  function onIconChange(e) {
+    var input = e.target;
+    var f = input && input.files ? input.files[0] : null;
+    try { input.value = ""; } catch (err) {}
+    if (f) upload(f);
   }
 
-  function removeIcon() {
-    return YC.ui.confirm("Remove your Yapit profile picture?", { ok: "Remove it", danger: true }).then(function (yes) {
-      if (!yes) return;
-      return YC.api("icon_remove").then(function () {
-        return loadMe();
-      }).then(function () {
-        unpatchAll();
-        if (me) {
-          clearLocal(String(me.id));
-          var letter = me.username ? String(me.username[0]).toUpperCase() : "";
-          var hit = needle(me.id);
-          Array.prototype.forEach.call(document.querySelectorAll(".av img"), function (im) {
-            var s = im.getAttribute("src") || "";
-            if (s.indexOf(hit) !== 0) return;
-            var host = im.parentNode;
-            if (!host) return;
-            host.removeChild(im);
-            host.appendChild(document.createTextNode(letter));
-          });
-        }
-        YC.ui.toast("Profile picture removed.");
-      }).catch(function (e) {
-        YC.ui.toast(String(e && e.message || e), "error");
-      });
-    });
+  function afterRemove() {
+    return loadMe(true).then(function (u) {
+      if (u && !u.icon) dropLocal(String(u.id));
+    }).catch(function () {});
   }
 
-
-  YC.registerPlugin({
-    id: PLUGIN,
-    name: "Custom PFP",
-    description: "Use any image you like as your Yapit profile picture. Pick the part you want in a crop box, then it uploads at full quality. GIFs keep moving on YapCord.",
-    defaultEnabled: true,
-
-    settings: [
-      {
-        id: "picture", type: "buttons", label: "Profile picture", actions: [
-          { label: "Choose image", fn: pick },
-          { label: "Remove picture", danger: true, fn: removeIcon }
-        ],
-        desc: "Any PNG, JPG, GIF or WebP up to 3000 x 3000 and 5 MB. A crop box opens so you choose exactly which part becomes your picture, then YapCord uploads it at full quality and refreshes every picture already on screen."
-      },
-      { id: "animateGif", type: "toggle", label: "Keep GIFs moving", default: true,
-        desc: "Yapit flattens every upload into one still picture, so GIFs freeze for everyone. This keeps the original GIF as well, cropped to match, so it still moves on your screen and for friends who import your config file." }
-    ],
-
-    start: function (ctx) {
-      ctx.css(CSS);
-      var list = entries();
-      var keys = Object.keys(list);
-      var ready = Promise.all(keys.map(function (uid) {
-        return rebuildUrl(uid, list[uid]);
-      })).then(function () {
-        live = true;
-        patchAll();
-      });
-      ctx.observe(document.body || document.documentElement, function () {
-        if (live) patchAll();
-      }, { childList: true, subtree: true });
-      void ready;
-    },
-
-    stop: function () {
-      live = false;
-      unpatchAll();
-      Object.keys(urls).forEach(function (uid) { URL.revokeObjectURL(urls[uid]); });
-      urls = {};
-      me = null;
+  function wire() {
+    var ic = document.getElementById("ic");
+    if (ic && ic.onchange !== onIconChange) {
+      if (!ic.hasAttribute("data-yc-ic")) {
+        try { saved.set(ic, ic.onchange); } catch (e) {}
+        ic.setAttribute("data-yc-ic", "1");
+      }
+      ic.onchange = onIconChange;
     }
-  });
+    var icr = document.getElementById("icr");
+    if (icr && icr.getAttribute("data-yc-icr") !== "1") {
+      try { saved.set(icr, icr.onclick); } catch (e) {}
+      icr.setAttribute("data-yc-icr", "1");
+      var orig = icr.onclick;
+      icr.onclick = function (e) {
+        var r = orig ? orig.call(icr, e) : undefined;
+        Promise.resolve(r).then(afterRemove, function () {});
+        return r;
+      };
+    }
+  }
+
+  function unwire() {
+    var ic = document.getElementById("ic");
+    if (ic && ic.getAttribute("data-yc-ic") === "1") {
+      ic.onchange = saved.has(ic) ? saved.get(ic) : null;
+      ic.removeAttribute("data-yc-ic");
+    }
+    var icr = document.getElementById("icr");
+    if (icr && icr.getAttribute("data-yc-icr") === "1") {
+      icr.onclick = saved.has(icr) ? saved.get(icr) : null;
+      icr.removeAttribute("data-yc-icr");
+    }
+  }
+
+  function onMutate() {
+    if (!masterOn()) return;
+    wire();
+    if (live) patchAll();
+  }
+
+  function ensureStyle() {
+    if (document.getElementById("yc-pfp-style")) return;
+    var el = document.createElement("style");
+    el.id = "yc-pfp-style";
+    el.textContent = CSS;
+    (document.head || document.documentElement).appendChild(el);
+  }
+
+  function sync() {
+    if (masterOn()) {
+      wire();
+      if (!live && Object.keys(urls).length) { live = true; patchAll(); }
+    } else {
+      unwire();
+      unpatchAll();
+      live = false;
+    }
+  }
+
+  function start() {
+    ensureStyle();
+    if (!observer) {
+      observer = new MutationObserver(onMutate);
+      observer.observe(document.documentElement || document, { childList: true, subtree: true });
+    }
+    if (!listening && YC.store.onChange) {
+      listening = true;
+      YC.store.onChange(function () { sync(); });
+    }
+    var list = entries();
+    Promise.all(Object.keys(list).map(function (uid) { return rebuildUrl(uid, list[uid]); })).then(function () {
+      if (!masterOn()) return;
+      live = true;
+      patchAll();
+    });
+    sync();
+  }
+
+  YC.pfp = { start: start, sync: sync, upload: upload, patchAll: patchAll };
 })(window.YapCord);

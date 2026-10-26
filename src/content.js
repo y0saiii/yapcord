@@ -24,6 +24,8 @@
     YC.syncPlugins();
     YC.settingsPanel.mount();
 
+    try { if (YC.pfp) YC.pfp.start(); } catch (e) { console.warn("[YapCord] profile picture", e); }
+
     YC.store.onChange(function () {
       try {
         YC.applyTheme();

@@ -41,11 +41,18 @@ If you update later, hit the refresh arrow on the YapCord card in
 | **RelationshipNotifier** | A toast, a desktop notification and a history entry when someone unfriends you or you get removed from a server, and when things go the other way. |
 | **Improve Yapit UI** | Makes Yapit look and feel like Discord: the rail, sidebar, channels, messages, composer and menus reshaped to Discord's layout, plus a fast mode that drops unused fonts and stops animations. It keeps whatever colours your theme uses. A compact message mode is in there too. |
 | **MultiLine** | Shift + Enter starts a new line so one message can span as many lines as you like, while Enter still sends it the usual way. The box grows as you type. Off until you switch it on, so nobody's Enter key changes without asking. |
-| **Custom PFP** | Use any PNG, JPG, GIF or WebP as your Yapit profile picture. A crop box opens with a circle in it, so you pick exactly which part becomes your picture, then it uploads at full quality instead of the site's squashed version. GIFs keep moving on your screen and for friends who import your config file, since Yapit itself freezes them to one frame. |
 | **Notification Sounds** | A soft two tone note when someone pings you and a different one for a direct message, with a volume slider and test buttons. Off by default. |
 | **Custom Font** | Give the whole site any font you like, from the presets (Verdana, Tahoma, Georgia and friends) or a font name you type yourself. Off by default. |
 | **Character Counter** | A small chip above the composer showing how much of Yapit's 2000 character limit you have used, turning red near the end. Off by default. |
 | **Copy Assets** | Right click a server icon or anyone's avatar and YapCord adds two choices to the menu: copy the link to that picture, or download it to your computer. It joins Yapit's own right click menu, so Server Settings and Copy Server ID are still there. On by default. |
+
+Profile pictures are built into YapCord, not a plugin. Hit Yapit's own
+**Upload icon** button in Yapit's Settings, under Profile, and a crop box opens
+with a circle in it, so you pick exactly which part becomes your picture
+before it uploads at full quality instead of the site's squashed version.
+Drag to move, use the slider or the mouse wheel to zoom, and GIFs keep moving
+on your screen and for friends who import your config file, since Yapit itself
+freezes them to one frame.
 
 Your whole setup (plugins, theme, keybinds, saved GIFs) lives in the **Data**
 tab. Hit **Export settings** to download it as one file you can share with a
